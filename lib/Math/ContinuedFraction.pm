@@ -55,8 +55,9 @@ sub new
 			my(@seq) = @$a_ref;
 
 			#
-			# See if there's a repeating component. If there is, check for
-			# one of those "Why are you doing that" empty array cases.
+			# See if there's a repeating component. If there is,
+			# check for one of those "Why are you doing that"
+			# empty array cases.
 			#
 			if (ref $seq[$#seq] eq "ARRAY")
 			{
@@ -65,7 +66,8 @@ sub new
 			}
 
 			#
-			# Another empty array case check, this one slightly legitimate.
+			# Another empty array case check, this one slightly
+			# legitimate.
 			#
 			$self->{simple} = (scalar @seq)? [@seq]: [0];
 		}
