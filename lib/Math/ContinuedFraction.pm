@@ -10,7 +10,16 @@ use Math::BigRat;
 our $VERSION = '0.11';
 
 #
-# $cf = Math::ContinuedFraction->new([1, 1, 1, 1, [3, 2, 3, 2]]);
+# $cf = Math::ContinuedFraction->new([1, 71, 13, 8]);
+#
+# $cf = Math::ContinuedFraction->new([1, 2, 1, 2, [3, 2, 3, 2]]);
+#
+# $bign = Math::Int->new("0xccc43c90d2c0");
+# $bigq = Math::Int->new("0xb2069d579ddb");
+# $cf = Math::ContinuedFraction->new($bign, $bigq);
+#
+# $bratio = Math::BigRat->new($bign, $bigq);
+# $cf = Math::ContinuedFraction->new($bratio);
 #
 #
 sub new
@@ -40,6 +49,8 @@ sub new
 	#
 	$self->{simple} = [0];
 	$self->{repeat} = undef;
+	$self->{simple_n} = undef;
+	$self->{repeat_n} = undef;
 
 	if (scalar @_)
 	{
@@ -70,6 +81,23 @@ sub new
 			# legitimate.
 			#
 			$self->{simple} = (scalar @seq)? [@seq]: [0];
+
+			#
+			# Now check for a second ARRAY component, which
+			# will act as a numerator in the written-out
+			# version of the continued fraction.
+			#
+			if (defined $b_ref and ref $b_ref eq "ARRAY")
+			{
+				my(@seq) = @$b_ref;
+
+				if (ref $seq[$#seq] eq "ARRAY")
+				{
+					my @r = @{ pop @seq };
+					$self->{repeat_b} = [@r] if (scalar @r > 0);
+				}
+				$self->{simple_b} = (scalar @seq)? [@seq]: [0];
+			}
 		}
 		elsif (ref $a_ref eq "Math::BigRat")
 		{
@@ -80,15 +108,25 @@ sub new
 			#
 			$self->from_ratio($n, $d);
 		}
+		elsif (ref $a_ref eq "Math::BigInt" and
+			ref $b_ref eq "Math::BigInt")
+		{
+			#
+			# Do from_ratio stuff.
+			#
+			$self->from_ratio($a_ref, $b_ref);
+		}
 		else
 		{
 			#
-			# Complain bitterly if we weren't passed an ARRAY or
-			# BigRat reference.
+			# Complain bitterly if we weren't passed an ARRAY,
+			# BigRat, or BigInt reference(s).
 			#
-			carp __PACKAGE__ .
-				"->new() takes either an array reference or a Math::BigRat object or another " .
-				__PACKAGE__ . " object";
+			carp "Error." . __PACKAGE__ .
+				"->new() takes either an array reference, " .
+				"or a Math::BigRat object, 
+				"or a pair of Math::BigInt objects, 
+				"or another " .  __PACKAGE__ . " object";
 			return undef;
 		}
 	}
@@ -134,18 +172,19 @@ sub from_ratio
 }
 
 #
-# $qs = Math::ContinuedFraction->from_quadratic($a, $b, $c);
+# $qs = Math::ContinuedFraction->from_root($x);
 #
 sub from_root
 {
 	my $class = shift;
 	my($dis) = @_;
 	my $self = {};
-	my(@repeat);
 
 	my($p, $q) = (0, 1);
 	my($a0, $a, $last);
 	$last = 2 * ($a0 = $a = int(sqrt($dis)));
+
+	my @repeat;
 
 	for (;;)
 	{
