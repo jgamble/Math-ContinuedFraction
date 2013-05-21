@@ -1,5 +1,12 @@
 Revision history for Math-ContinuedFraction
 
+0.12
+	20 May2013
+	- Add the 'b' portion of the ->new() method. Works for
+	  new BigRat and BigInt arguments, currently has no
+	  affect for the array sequence method, although the
+	  arguments are stored.
+
 0.11
 	21 January 2011
 	- Got the named changed to its CamelCase form.
