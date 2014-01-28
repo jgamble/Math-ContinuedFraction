@@ -1,6 +1,10 @@
 Revision history for Math-ContinuedFraction
 
 0.12
+	27 January 2013
+	- Fixed a documentation error and removed an unused variable as
+	  pointed out by Saasha Metsarantala (my apologies for missing
+	  diacritical marks in the name).
 	20 May2013
 	- Add the 'b' portion of the ->new() method. Works for
 	  new BigRat and BigInt arguments, currently has no
