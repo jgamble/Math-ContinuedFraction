@@ -22,7 +22,11 @@ my $builder = Module::Build->new(
     create_makefile_pl => 'traditional',
 
     meta_merge	=> {
-	    keyword => [qw(math continued-fraction sequences)],
+        keyword => [qw(math continued-fraction sequences)],
+
+        resources => {
+            repository => 'git://github.com/jgamble/Math-ContinuedFraction.git',
+        },
     },
 );
 
