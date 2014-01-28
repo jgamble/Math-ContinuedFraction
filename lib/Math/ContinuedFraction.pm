@@ -7,7 +7,7 @@ use Math::BigInt;
 use Math::BigRat;
 #use Smart::Comments;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 #
 # $cf = Math::ContinuedFraction->new([1, 71, 13, 8]);
@@ -26,7 +26,6 @@ sub new
 {
 	my $class = shift;
 	my $self = {};
-	my(@seq);
 
 	if (ref $class)
 	{
@@ -47,17 +46,15 @@ sub new
 	# We're not creating a copy of an existing CF, so start from
 	# first principles.
 	#
-	$self->{simple} = [0];
-	$self->{repeat} = undef;
-	$self->{simple_n} = undef;
-	$self->{repeat_n} = undef;
+	$self->{simple_a} = [0];
+	$self->{repeat_a} = undef;
+	$self->{simple_b} = undef;
+	$self->{repeat_b} = undef;
 
 	if (scalar @_)
 	{
 		#
 		# Get the a's and b's.
-		# SHHH! Don't tell anyone about the b's yet, but
-		# they'll get accessed in a later version.
 		#
 		my($a_ref, $b_ref) = @_;
 
@@ -73,14 +70,14 @@ sub new
 			if (ref $seq[$#seq] eq "ARRAY")
 			{
 				my @r = @{ pop @seq };
-				$self->{repeat} = [@r] if (scalar @r > 0);
+				$self->{repeat_a} = [@r] if (scalar @r > 0);
 			}
 
 			#
 			# Another empty array case check, this one slightly
 			# legitimate.
 			#
-			$self->{simple} = (scalar @seq)? [@seq]: [0];
+			$self->{simple_a} = (scalar @seq)? [@seq]: [0];
 
 			#
 			# Now check for a second ARRAY component, which
@@ -115,6 +112,9 @@ sub new
 			# Do from_ratio stuff.
 			#
 			$self->from_ratio($a_ref, $b_ref);
+		}
+		elsif (ref $a_ref eq "Math::NumSeq")
+		{
 		}
 		else
 		{
@@ -166,8 +166,8 @@ sub from_ratio
 		$d = $r;
 	}
 
-	$self->{simple} = [@cf];
-	$self->{repeat} = undef;
+	$self->{simple_a} = [@cf];
+	$self->{repeat_a} = undef;
 	return bless($self, $class);
 }
 
@@ -195,8 +195,8 @@ sub from_root
 		last if ($last == $a);
 	}
 
-	$self->{simple} = [$a0];
-	$self->{repeat} = [@repeat];
+	$self->{simple_a} = [$a0];
+	$self->{repeat_a} = [@repeat];
 	return bless($self, $class);
 }
 
@@ -221,7 +221,7 @@ sub from_quadratic
 sub is_finite
 {
 	my $self = shift;
-	return ($self->{repeat})? 1: 0;
+	return ($self->{repeat_a})? 1: 0;
 }
 
 #
@@ -231,8 +231,8 @@ sub is_finite
 sub sequence_length
 {
 	my $self = shift;
-	my $sl = scalar @{ $self->{simple} };
-	my $rl = ($self->{repeat})? scalar @{ $self->{repeat} }: 0;
+	my $sl = scalar @{ $self->{simple_a} };
+	my $rl = ($self->{repeat_a})? scalar @{ $self->{repeat_a} }: 0;
 
 	return ($sl, $rl);
 }
@@ -288,19 +288,19 @@ sub convergent
 		#
 		if ($remainder > 0)
 		{
-			my @remaining = (@{ $self->{repeat} }[0..$remainder]);
+			my @remaining = (@{ $self->{repeat_a} }[0..$remainder]);
 			($n, $d) = $self->evaluate(\@remaining, $n, $d);
 		}
 
 		for (1..$repetitions)
 		{
-			($n, $d) = $self->evaluate($self->{repeat}, $n, $d);
+			($n, $d) = $self->evaluate($self->{repeat_a}, $n, $d);
 		}
 
-		return reverse $self->evaluate($self->{simple}, $n, $d);
+		return reverse $self->evaluate($self->{simple_a}, $n, $d);
 	}
 
-	my @partial = @{ $self->{simple} }[0..$terms];
+	my @partial = @{ $self->{simple_a} }[0..$terms];
 	return reverse $self->evaluate(\@partial, $n, $d);
 }
 
@@ -339,8 +339,8 @@ sub evaluate
 sub to_array
 {
 	my $self = shift;
-	my $v = $self->{simple};
-	push @{ $v }, $self->{repeat} if ($self->{repeat});
+	my $v = $self->{simple_a};
+	push @{ $v }, $self->{repeat_a} if ($self->{repeat_a});
 
 	return $v;
 }
@@ -348,8 +348,8 @@ sub to_array
 sub to_ascii
 {
 	my $self = shift;
-	my $cf = '[' . join(", ", @{ $self->{simple} });
-	$cf .= ', [' . join(", ", @{ $self->{repeat} }) . ']' if ($self->{repeat});
+	my $cf = '[' . join(", ", @{ $self->{simple_a} });
+	$cf .= ', [' . join(", ", @{ $self->{repeat_a} }) . ']' if ($self->{repeat_a});
 	return $cf .']';
 }
 
@@ -371,8 +371,8 @@ sub _copy
 		$self->{$k} = $other->{$k};
 	}
 
-	$self->{simple} = [ @$other->{simple} ];
-	$self->{repeat} = ($other->{repeat})? [ @$other->{repeat} ]: undef;
+	$self->{simple_a} = [ @$other->{simple_a} ];
+	$self->{repeat_a} = ($other->{repeat_a})? [ @$other->{repeat_a} ]: undef;
 
 	return $self;
 }
@@ -489,7 +489,7 @@ object instead of two Math::BigInt objects.
 
     for my $j (1..4)
     {
-        my $r = cfpi->convergent($j);
+        my $r = cfpi->brconvergent($j);
         print $r->bstr() . "\n";
     }
 
