@@ -7,21 +7,91 @@ use Math::BigInt;
 use Math::BigRat;
 #use Smart::Comments;
 
-our $VERSION = '0.12';
+our $VERSION = '0.20';
 
-#
-# $cf = Math::ContinuedFraction->new([1, 71, 13, 8]);
-#
-# $cf = Math::ContinuedFraction->new([1, 2, 1, 2, [3, 2, 3, 2]]);
-#
-# $bign = Math::Int->new("0xccc43c90d2c0");
-# $bigq = Math::Int->new("0xb2069d579ddb");
-# $cf = Math::ContinuedFraction->new($bign, $bigq);
-#
-# $bratio = Math::BigRat->new($bign, $bigq);
-# $cf = Math::ContinuedFraction->new($bratio);
-#
-#
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Math::ContinuedFraction - Create and Manipulate Continued Fractions.
+
+=head1 SYNOPSIS
+
+Quick summary of what the module does.
+
+Perhaps a little code snippet.
+
+    use Math::ContinuedFraction;
+
+    #
+    # Create new continued fraction objects.
+    #
+    my $cf = Math::ContinuedFraction->new([1, 4, 9, 25]);
+    my $cf_phi = Math::ContinuedFraction->new([1, [1]]);
+ 
+    my $cf_67div29 = Math::ContinuedFraction->from_ratio(67, 29);
+
+
+=head1 DESCRIPTION
+
+Continued fractions are expressions of the form
+
+         b1
+    a1 + -------
+               b2
+          a2 + -------
+	             b3
+	        a3 + -------
+	                ...
+
+For most instances, the 'b' terms are 1, and the continued fraction
+can be written as C<[a1, a2, a3, ...]>, etc. If the sequence of 'a' terms ends
+at a certain point, the continued fraction is known as a finite continued
+fraction, and can be exactly represented as a fraction. If the sequence of
+'a' terms has a repeating sequence, it is normally written as
+
+                 ______
+    [a1, a2, a3, a4, a5]
+
+where the line over a4 and a5 indicates that they repeat forever. Since we
+can't use that method in perl code, we indicate the repeating portion by using an
+array within the array:
+
+    [a1, a2, a3, [a4, a5]]
+
+Note that in the examples in the L</SYNOPSIS>, C<$cf_phi> is created using
+that notation.
+
+=head2 Methods to Create Continued Fraction Objects
+
+=head3 new()
+
+Create a new continued fraction object from an array.
+
+    my $cf = Math::ContinuedFraction([1, [2, 1]]);
+
+Arrays are in the form C<[finite_sequence, [repeating_sequence]]>. A continued fraction
+with no repeating part simply omits the embedded array reference:
+
+    my $cf = Math::ContinuedFraction([1, 2, 1, 3, 1, 5]);
+
+
+
+    $cf = Math::ContinuedFraction->new([1, 71, 13, 8]);
+
+    $cf = Math::ContinuedFraction->new([1, 2, 1, 2, [3, 2, 3, 2]]);
+
+    $bign = Math::Int->new("0xccc43c90d2c0");
+    $bigq = Math::Int->new("0xb2069d579ddb");
+    $cf = Math::ContinuedFraction->new($bign, $bigq);
+
+    $bratio = Math::BigRat->new($bign, $bigq);
+    $cf = Math::ContinuedFraction->new($bratio);
+
+=cut
+
 sub new
 {
 	my $class = shift;
@@ -134,12 +204,18 @@ sub new
 	return $self;
 }
 
-#
-# my $cf67_29 = Math::ContinuedFraction->from_ratio(67, 29);
-#
-# Create a continued fraction from a simple ratio.
-# These CFs will always be the simple types.
-#
+=head3 from_ratio()
+
+Generate a continued fraction from a pair of relatively prime numbers.
+
+
+    my $cf67_29 = Math::ContinuedFraction->from_ratio(67, 29);
+
+Create a continued fraction from a simple ratio.
+These CFs will always be the simple types.
+
+=cut
+
 sub from_ratio
 {
 	my $class = shift;
@@ -237,12 +313,27 @@ sub sequence_length
 	return ($sl, $rl);
 }
 
-#
-# $bigratio = $cf->brconvergent($nth);
-#
-# Exactly like the convergent() method, except returning a BigRat
-# type instead of separate BigInt numerator and denominator.
-#
+=head3 brconvergent()
+
+Behaves identically to convergent(), but returns a single Math::BigRat
+object instead of two Math::BigInt objects.
+
+    #
+    # Find the ratios that approximate pi.
+    #
+    # The array stops at seven elements for simplicity's sake,
+    # the sequence actually does not end.
+    #
+    my $cfpi = Math::ContinuedFraction([3, 7, 15, 1, 292, 1, 1]);
+
+    for my $j (1..4)
+    {
+        my $r = cfpi->brconvergent($j);
+        print $r->bstr() . "\n";
+    }
+
+=cut
+
 sub brconvergent
 {
 	my $self = shift;
@@ -252,11 +343,40 @@ sub brconvergent
 	return Math::BigRat->new($n, $d);
 }
 
-#
-# ($numerator, $denominator) = $cf->convergent($nth);
-#
-# Get the fraction for the continued fraction at the nth term.
-#
+=head2 Methods to Return Information
+
+=head3 convergent()
+
+Returns the fraction formed by calculating the rational approximation
+of the continued fraction at a stopping point, and returning the
+numerator and denominator.
+
+Convergent term counts begin at 1. Continued fractions with a repeating
+component can effectively have a term count as high as you like. Finite
+continued fractions will stop at the end of the sequence without warning.
+
+    #
+    # Find the ratios that approximate pi.
+    #
+    # The array stops at seven elements for simplicity's sake,
+    # the sequence actually does not end.
+    #
+    my $cfpi = Math::ContinuedFraction([3, 7, 15, 1, 292, 1, 1]);
+
+    for my $j (1..4)
+    {
+        my($n, $d) = cfpi->convergent($j);
+        print $n->bstr() . "/". $d->bstr() . "\n";
+    }
+
+The values returned are objects of type Math::BigInt.
+
+    ($numerator, $denominator) = $cf->convergent($nth);
+
+Get the fraction for the continued fraction at the nth term.
+
+=cut
+
 sub convergent
 {
 	my $self = shift;
@@ -333,9 +453,16 @@ sub evaluate
 	return ($n, $d);
 }
 
-#
-# Get the array form of the continued fraction.
-#
+=head3 to_array()
+
+Returns an array reference that can be used to create a continued fraction (see L</new()>).
+
+    my $cf = Math::ContinuedFraction->from_ratio(0xfff1, 0x7fed);
+    my $aref = $cf->to_array()
+    my $cf2 = Math::ContinuedFraction->new($aref);
+
+=cut
+
 sub to_array
 {
 	my $self = shift;
@@ -344,6 +471,17 @@ sub to_array
 
 	return $v;
 }
+
+=head3 to_ascii()
+
+Returns the string form of the array reference.
+
+    my $cf = Math::ContinuedFraction->from_ratio(0xfff1, 0x7fed);
+    print $cf->to_ascii(), "\n";
+
+Returns C<[2, 1432, 1, 6, 1, 2]>.
+
+=cut
 
 sub to_ascii
 {
@@ -377,143 +515,10 @@ sub _copy
 	return $self;
 }
 
+1;
+__END__
 
-=head1 NAME
-
-Math::ContinuedFraction - Create and Manipulate Continued Fractions.
-
-=head1 SYNOPSIS
-
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
-    use Math::ContinuedFraction;
-
-    #
-    # Create new continued fraction objects.
-    #
-    my $cf = Math::ContinuedFraction->new([1, 4, 9, 25]);
-    my $cf_phi = Math::ContinuedFraction->new([1, [1]]);
- 
-    my $cf_67div29 = Math::ContinuedFraction->from_ratio(67, 29);
-
-
-=head1 DESCRIPTION
-
-Continued fractions are expressions of the form
-
-         b1
-    a1 + -------
-               b2
-          a2 + -------
-	             b3
-	        a3 + -------
-	                ...
-
-For most instances, the 'b' terms are 1, and the continued fraction
-can be written as C<[a1, a2, a3, ...]>, etc. If the sequence of 'a' terms ends
-at a certain point, the continued fraction is known as a finite continued
-fraction, and can be exactly represented as a fraction. If the sequence of
-'a' terms has a repeating sequence, it is normally written as
-
-                 ______
-    [a1, a2, a3, a4, a5]
-
-where the line over a4 and a5 indicates that they repeat forever. Since we
-can't use that method in perl code, we indicate the repeating portion by using an
-array within the array:
-
-    [a1, a2, a3, [a4, a5]]
-
-Note that in the examples in the L</SYNOPSIS>, C<$cf_phi> is created using
-that notation.
-
-=head2 Methods to Create Continued Fraction Objects
-
-=head3 new()
-
-Create a new continued fraction object from an array.
-
-    my $cf = Math::ContinuedFraction([1, [2, 1]]);
-
-Arrays are in the form C<[finite_sequence, [repeating_sequence]]>. A continued fraction
-with no repeating part simply omits the embedded array reference:
-
-    my $cf = Math::ContinuedFraction([1, 2, 1, 3, 1, 5]);
-
-=head3 from_ratio()
-
-Generate a continued fraction from a pair of relatively prime numbers.
-
-=head2 Methods to Return Information
-
-=head3 convergent()
-
-Returns the fraction formed by calculating the rational approximation
-of the continued fraction at a stopping point, and returning the
-numerator and denominator.
-
-Convergent term counts begin at 1. Continued fractions with a repeating
-component can effectively have a term count as high as you like. Finite
-continued fractions will stop at the end of the sequence without warning.
-
-    #
-    # Find the ratios that approximate pi.
-    #
-    # The array stops at seven elements for simplicity's sake,
-    # the sequence actually does not end.
-    #
-    my $cfpi = Math::ContinuedFraction([3, 7, 15, 1, 292, 1, 1]);
-
-    for my $j (1..4)
-    {
-        my($n, $d) = cfpi->convergent($j);
-        print $n->bstr() . "/". $d->bstr() . "\n";
-    }
-
-The values returned are objects of type Math::BigInt.
-
-=head3 brconvergent()
-
-Behaves identically to convergent(), but returns a single Math::BigRat
-object instead of two Math::BigInt objects.
-
-    #
-    # Find the ratios that approximate pi.
-    #
-    # The array stops at seven elements for simplicity's sake,
-    # the sequence actually does not end.
-    #
-    my $cfpi = Math::ContinuedFraction([3, 7, 15, 1, 292, 1, 1]);
-
-    for my $j (1..4)
-    {
-        my $r = cfpi->brconvergent($j);
-        print $r->bstr() . "\n";
-    }
-
-
-=head3 to_array()
-
-Returns an array reference that can be used to create a continued fraction (see L</new()>).
-
-    my $cf = Math::ContinuedFraction->from_ratio(0xfff1, 0x7fed);
-    my $aref = $cf->to_array()
-    my $cf2 = Math::ContinuedFraction->new($aref);
-
-=head3 to_ascii()
-
-Returns the string form of the array reference.
-
-    my $cf = Math::ContinuedFraction->from_ratio(0xfff1, 0x7fed);
-    print $cf->to_ascii(), "\n";
-
-Returns C<[2, 1432, 1, 6, 1, 2]>.
-
-=head1 AUTHOR
-
-John Gamble, C<< <jgamble at cpan.org> >>
+=pod
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -529,7 +534,9 @@ by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
 
+=head1 AUTHOR
+
+John Gamble, C<< <jgamble at cpan.org> >>
 
 =cut
 
-1; # End of Math::ContinuedFraction
