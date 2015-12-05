@@ -1,5 +1,7 @@
 package Math::ContinuedFraction;
 
+use '5.010001';
+
 use warnings;
 use strict;
 use Carp;
@@ -56,8 +58,8 @@ fraction, and can be exactly represented as a fraction. If the sequence of
     [a1, a2, a3, a4, a5]
 
 where the line over a4 and a5 indicates that they repeat forever. Since we
-can't use that method in perl code, we indicate the repeating portion by using an
-array within the array:
+can't use that method in perl code, we indicate the repeating portion by
+using an array within the array:
 
     [a1, a2, a3, [a4, a5]]
 
@@ -68,26 +70,47 @@ that notation.
 
 =head3 new()
 
-Create a new continued fraction object from an array.
+Create a new continued fraction object from an array or the
+ratio of two numbers.
 
     my $cf = Math::ContinuedFraction([1, [2, 1]]);
 
-Arrays are in the form C<[finite_sequence, [repeating_sequence]]>. A continued fraction
-with no repeating part simply omits the embedded array reference:
+Arrays are in the form C<[finite_sequence, [repeating_sequence]]>. A
+continued fraction with no repeating part simply omits the embedded
+array reference:
 
-    my $cf = Math::ContinuedFraction([1, 2, 1, 3, 1, 5]);
-
-
-
+    $cf = Math::ContinuedFraction([1, 2, 1, 3, 1, 5]);
     $cf = Math::ContinuedFraction->new([1, 71, 13, 8]);
-
     $cf = Math::ContinuedFraction->new([1, 2, 1, 2, [3, 2, 3, 2]]);
 
-    $bign = Math::Int->new("0xccc43c90d2c0");
-    $bigq = Math::Int->new("0xb2069d579ddb");
-    $cf = Math::ContinuedFraction->new($bign, $bigq);
+A continued fraction may be created from a ratio between two numbers.
+Be sure not to put the numbers in an array, as
 
-    $bratio = Math::BigRat->new($bign, $bigq);
+    #
+    # Find the CF form of 121/23.
+    #
+    $cf  = Math::ContinuedFraction->new(121, 23);
+
+is different from
+
+    #
+    # Find the CF of
+    #     121 + 1
+    #          -----
+    #           23
+    #
+    $cf  = Math::ContinuedFraction->new([121, 23]);
+
+
+The ratio may consist of Math::BigInt objects.
+
+    $big_n = Math::BigInt->new("0xccc43c90d2c0");
+    $big_q = Math::BigInt->new("0xb2069d579ddb");
+    $cf = Math::ContinuedFraction->new($big_n, $big_q);
+
+A Math::BigRat object will also work:
+
+    $bratio = Math::BigRat->new("0xccc43c90d2c0", "0xb2069d579ddb");
     $cf = Math::ContinuedFraction->new($bratio);
 
 =cut
