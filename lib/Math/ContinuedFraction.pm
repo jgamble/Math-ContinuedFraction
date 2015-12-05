@@ -9,6 +9,13 @@ use Math::BigInt;
 use Math::BigRat;
 #use Smart::Comments;
 
+use overload
+	'+' => sub {return Continued::Fraction->add($_[0], $_[1]);},
+	'-' => sub {return Continued::Fraction->subt($_[0], $_[1]);},
+	'*' => sub {return Continued::Fraction->mult($_[0], $_[1]);},
+	'/' => sub {return Continued::Fraction->div($_[0], $_[1]);},
+	;
+
 our $VERSION = '0.20';
 
 =pod
@@ -209,11 +216,20 @@ sub new
 		elsif (ref $a_ref eq "Math::NumSeq")
 		{
 		}
+		elsif (ref $a_ref eq '' and ref $b_ref eq '' and
+			defined($a_ref) and defined($b_ref))
+		{
+			#
+			# Do from_ratio stuff.
+			#
+			$self->from_ratio($a_ref, $b_ref);
+		}
 		else
 		{
 			#
 			# Complain bitterly if we weren't passed an ARRAY,
-			# BigRat, or BigInt reference(s).
+			# BigRat or BigInt references, or just a pair of
+			# numbers.
 			#
 			carp "Error." . __PACKAGE__ .
 				"->new() takes either an array reference, " .
