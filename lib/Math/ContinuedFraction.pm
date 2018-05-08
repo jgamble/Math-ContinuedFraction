@@ -329,6 +329,16 @@ sub from_quadratic
 }
 
 #
+# "... every periodic simple continued fraction CF represents a
+# quadratic irrational (c + f*sqrt(d))/b, where b,c,f,d are integers
+# and d is squarefree."
+#    OEIS, A246904
+#
+sub to_qirrational
+{
+}
+
+#
 # if ($cf->is_finite()) { ...
 #
 #
@@ -352,6 +362,30 @@ sub sequence_length
 	return ($sl, $rl);
 }
 
+#
+# Some OEIS sequences.
+#
+# e: A0031417
+# pi: A001203
+#
+my $oeis_e = [
+	2, 1, 2, 1, 1, 4, 1, 1, 6, 1, 1, 8, 1, 1, 10, 1,
+	1, 12, 1, 1, 14, 1, 1, 16, 1, 1, 18, 1, 1, 20, 1, 1,
+	22, 1, 1, 24, 1, 1, 26, 1, 1, 28, 1, 1, 30, 1, 1, 32,
+	1, 1, 34, 1, 1, 36, 1, 1, 38, 1, 1, 40, 1, 1, 42, 1,
+	1, 44, 1, 1, 46, 1, 1, 48, 1, 1, 50, 1, 1, 52, 1, 1,
+	54, 1, 1, 56, 1, 1, 58, 1, 1, 60, 1, 1, 62, 1, 1, 64,
+	1, 1, 66];
+
+my $oeis_pi = [
+	3, 7, 15, 1, 292, 1, 1, 1, 2, 1, 3, 1, 14, 2, 1, 1,
+	2, 2, 2, 2, 1, 84, 2, 1, 1, 15, 3, 13, 1, 4, 2, 6,
+	6, 99, 1, 2, 2, 6, 3, 5, 1, 1, 6, 8, 1, 7, 1, 2,
+	3, 7, 1, 2, 1, 1, 12, 1, 1, 1, 3, 1, 1, 8, 1, 1,
+	2, 1, 6, 1, 1, 5, 2, 2, 3, 1, 2, 4, 4, 16, 1, 161,
+	45, 1, 22, 1, 2, 2, 1, 4, 1, 2, 24, 1, 2, 1, 3, 1,
+	2, 1];
+
 =head3 brconvergent()
 
 Behaves identically to convergent(), but returns a single Math::BigRat
@@ -361,7 +395,8 @@ object instead of two Math::BigInt objects.
     # Find the ratios that approximate pi.
     #
     # The array stops at seven elements for simplicity's sake,
-    # the sequence actually does not end.
+    # the sequence actually does not end. See sequence A001203
+    # at the Online Encyclopedia of Integer Sequences (http://www.oeis.org/)
     #
     my $cfpi = Math::ContinuedFraction([3, 7, 15, 1, 292, 1, 1]);
 
@@ -529,6 +564,30 @@ sub to_ascii
 	$cf .= ', [' . join(", ", @{ $self->{repeat_a} }) . ']' if ($self->{repeat_a});
 	return $cf .']';
 }
+
+#
+#
+#
+sub add
+{
+	my $self = shift;
+}
+
+sub subt
+{
+	my $self = shift;
+}
+
+sub mult
+{
+	my $self = shift;
+}
+
+sub div
+{
+	my $self = shift;
+}
+
 
 #
 # $class->_copy($self);
