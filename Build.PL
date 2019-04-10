@@ -1,3 +1,4 @@
+use 5.010001;
 use strict;
 use warnings;
 use Module::Build;
@@ -5,29 +6,37 @@ use Module::Build;
 my $builder = Module::Build->new(
 	module_name => 'Math::ContinuedFraction',
 
-	dist_abstract => 'Create and manipulate continued fractions',
 	dist_author => q{John M. Gamble <jgamble@cpan.org>},
-	dist_version => '0.20',
+	dist_abstract => 'Create and manipulate continued fractions',
+	dist_version => '0.13',
+	release_status => 'stable',
+
+	provides => {
+		'Math::ContinuedFraction' => {
+			file => 'lib/Math/ContinuedFraction.pm',
+		},
+	},
 
 	requires => {
 		perl => '5.10.1',
+		Carp => 0,
 		'Math::BigInt' => 0,
 		'Math::BigRat' => 0,
 	},
 
 	configure_requires => {
-		'Module::Build' => 0,
+		'Module::Build' => 0.4224,
 	},
 
 	build_requires => {
-		'Test::Simple' => 0,
+		'Test::More' => 0,
 	},
 
 	license => 'perl',
 	create_license => 1,
 	create_readme => 0,
 	create_makefile_pl => 'traditional',
-	dynamic_confic => 0,
+	dynamic_config => 0,
 	add_to_cleanup => [ 'Math-ContinuedFraction-*' ],
 
 	meta_merge => {
@@ -35,6 +44,11 @@ my $builder = Module::Build->new(
 
 		resources => {
 		    repository => 'git://github.com/jgamble/Math-ContinuedFraction.git',
+#		    repository => {
+#			url => 'git://github.com/jgamble/Math-ContinuedFraction.git',
+#			web => 'https://github.com/jgamble/Math-ContinuedFraction',
+#			type => 'git',
+#			},
 		},
 	},
 );

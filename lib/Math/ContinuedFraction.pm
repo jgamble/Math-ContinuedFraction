@@ -1,6 +1,6 @@
 package Math::ContinuedFraction;
 
-use '5.010001';
+use 5.010001;
 
 use warnings;
 use strict;
@@ -16,7 +16,7 @@ use overload
 	'/' => sub {return Continued::Fraction->div($_[0], $_[1]);},
 	;
 
-our $VERSION = '0.20';
+our $VERSION = '0.13';
 
 =pod
 
@@ -233,8 +233,8 @@ sub new
 			#
 			carp "Error." . __PACKAGE__ .
 				"->new() takes either an array reference, " .
-				"or a Math::BigRat object, 
-				"or a pair of Math::BigInt objects, 
+				"or a Math::BigRat object, " .
+				"or a pair of Math::BigInt objects, " .
 				"or another " .  __PACKAGE__ . " object";
 			return undef;
 		}
@@ -262,12 +262,10 @@ sub from_ratio
 	my $self = {};
 	my @cf;
 
-	use integer;
-
 	LOOP:
 	for (;;)
 	{
-		my $q = $n / $d;
+		my $q = int($n/$d);
 		my $r = $n % $d;
 
 		push @cf, $q;
@@ -458,8 +456,6 @@ sub convergent
 	my($repetitions, $remainder) = (0, 0);
 	my($sl, $rl) = $self->sequence_length();
 
-	use integer;
-
 	#
 	### $terms
 	### $sl
@@ -471,9 +467,9 @@ sub convergent
 	$terms = $sl + $rl unless ($terms);
 	$terms = $sl if ($terms > $sl and $rl == 0);
 
-	if ($terms >= $sl)
+	if ($terms > $sl)
 	{
-		$repetitions = ($terms - $sl) / $rl;
+		$repetitions = int(($terms - $sl) / $rl);
 		$remainder = ($terms - $sl) % $rl;
 
 		#
@@ -529,7 +525,8 @@ sub evaluate
 
 =head3 to_array()
 
-Returns an array reference that can be used to create a continued fraction (see L</new()>).
+Returns an array reference that can be used to create a continued
+fraction (see L</new()>).
 
     my $cf = Math::ContinuedFraction->from_ratio(0xfff1, 0x7fed);
     my $aref = $cf->to_array()
